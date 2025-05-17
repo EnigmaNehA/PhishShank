@@ -272,13 +272,14 @@ def predict():
 
     try:
         features = extract_features_from_url(url)
-        preds = model.predict(np.array([features]))
-        prediction = int(preds[0] >= 0.5)
+        prediction = int(model.predict(np.array([features]))[0])
         result = "Phishing" if prediction == 1 else "Legitimate"
+        logging.info(f"Prediction: {result} for URL: {url}")
         return render_template("index.html", url=url, prediction=result)
     except Exception as e:
         logging.error(f"Prediction error: {e}")
         return render_template("index.html", error="Internal Server Error")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    debug_mode = os.getenv("FLASK_DEBUG", "false").lower() == "true"
+    app.run(host="0.0.0.0", port=5000, debug=debug_mode)
