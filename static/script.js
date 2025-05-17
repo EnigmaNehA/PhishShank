@@ -52,7 +52,14 @@ async function checkURL() {
   }
 }
 
-document.getElementById("checkBtn").addEventListener("click", checkURL);
+document.getElementById("submitBtn").addEventListener("click", e => {
+  e.preventDefault(); // prevent form submission
+  checkURL();
+});
+
 document.getElementById("urlInput").addEventListener("keypress", e => {
-  if (e.key === "Enter") checkURL();
+  if (e.key === "Enter") {
+    e.preventDefault();
+    checkURL();
+  }
 });
