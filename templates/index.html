@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PhishShank - URL Safety Checker</title>
+  <link rel = "stylesheet" href = "style.css" />
+</head>
+<body>
+  <div class="container" role="main" aria-labelledby="title">
+    <h1 id="title">PhishShank</h1>
+    <h2>Enter a URL to check if it's safe or a phishing threat</h2>
+    <form id="checkForm" novalidate>
+      <input
+        type="url"
+        id="urlInput"
+        name="url"
+        placeholder="https://example.com"
+        required
+        pattern="https?://.+"
+        aria-describedby="urlHelp"
+        aria-label="URL to check"
+        autocomplete="off"
+      />
+      <button type="submit" id="submitBtn">Check</button>
+    </form>
+    <div id="result" role="status" aria-live="polite"></div>
+    <footer>
+      Developed with 💜 by Neha Nayak
+    </footer>
+  </div>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>
