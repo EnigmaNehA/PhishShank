@@ -157,12 +157,16 @@
       border: 2px solid #5b3b8a;
       box-shadow: 0 8px 30px #5b3b8a88;
     }
-    .error {
-      background: linear-gradient(135deg, #d39bd1, #6a4db8);
-      color: #f8eaff;
-      border: 2px solid #6a4db8;
-      box-shadow: 0 8px 30px #6a4db888;
+    .error-message {
+      color: #fff;
+      background: #9b5de5;
+      padding: 10px 20px;
+      margin-top: 10px;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
     }
+
 
     footer {
       margin-top: 3rem;
