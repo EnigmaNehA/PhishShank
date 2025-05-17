@@ -172,3 +172,24 @@
       font-weight: 600;
       text-shadow: 1px 1px 4px #b3a6d2cc;
     }
+
+    /* Mobile Responsive */
+@media (max-width: 480px) {
+  h1 {
+    font-size: 2rem;
+  }
+  input[type="url"], button {
+    font-size: 1rem;
+    padding: 0.8rem 1.2rem;
+  }
+  .container {
+    padding: 2rem 1.2rem;
+  }
+}
+
+/* Focus styles */
+input[type="url"]:focus, button:focus {
+  outline: 3px solid #65d6f8;
+  outline-offset: 2px;
+}
+
