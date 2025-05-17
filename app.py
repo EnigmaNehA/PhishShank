@@ -22,7 +22,7 @@ CORS(app)
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 MODEL_PATH = "model.json"
 
-model = xgb.Booster()
+model = xgb.XGBClassifier()
 model.load_model(MODEL_PATH)
 
 # -- Feature extraction functions here (unchanged) --
@@ -254,7 +254,8 @@ def extract_features_from_url(url):
         forwarding(url),
         check_google_safe_browsing(url)
     ]
-    return xgb.DMatrix(np.array([features]))
+    return features
+
 
 @app.route("/", methods=["GET"])
 def home():
@@ -270,8 +271,8 @@ def predict():
         url = "http://" + url
 
     try:
-        dmatrix = extract_features_from_url(url)
-        preds = model.predict(dmatrix)
+        features = extract_features_from_url(url)
+        preds = model.predict(np.array([features]))
         prediction = int(preds[0] >= 0.5)
         result = "Phishing" if prediction == 1 else "Legitimate"
         return render_template("index.html", url=url, prediction=result)
