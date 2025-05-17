@@ -1,15 +1,4 @@
-// script.js (Enhanced & Integrated Version)
-
-const apiUrl = "/check_url";
-
-function isValidURL(string) {
-  try {
-    new URL(string);
-    return true;
-  } catch (_) {
-    return false;
-  }
-}
+const apiUrl = "/predict";
 
 async function checkURL() {
   const urlInput = document.getElementById("urlInput");
@@ -17,14 +6,15 @@ async function checkURL() {
   const url = urlInput.value.trim();
 
   resultDiv.className = "";
-
   if (!url) {
     resultDiv.textContent = "Please enter a URL.";
     resultDiv.classList.add("show");
     return;
   }
 
-  if (!isValidURL(url)) {
+  try {
+    new URL(url);
+  } catch {
     resultDiv.textContent = "Invalid URL format.";
     resultDiv.classList.add("show");
     return;
@@ -36,39 +26,33 @@ async function checkURL() {
   try {
     const response = await fetch(apiUrl, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: {"Content-Type": "application/json"},
       body: JSON.stringify({ url })
     });
 
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`Status ${response.status}`);
 
     const data = await response.json();
 
-    // Adjust according to backend response structure
-    if (data.prediction === 1) {
+    // Example backend returns {"prediction": "Phishing"} or {"prediction": "Legitimate"}
+    if (data.prediction === "Phishing") {
       resultDiv.className = "show phishing";
       resultDiv.textContent = "⚠️ This URL is likely a phishing website!";
-    } else if (data.prediction === 0) {
+    } else if (data.prediction === "Legitimate") {
       resultDiv.className = "show safe";
       resultDiv.textContent = "✅ This URL appears safe.";
     } else {
       resultDiv.className = "show";
-      resultDiv.textContent = "Unexpected response. Please try again later.";
+      resultDiv.textContent = "Unexpected response from server.";
     }
-  } catch (error) {
-    console.error("Fetch error:", error);
+  } catch (err) {
+    console.error("Fetch error:", err);
     resultDiv.className = "show";
     resultDiv.textContent = "Error checking URL. Please try again later.";
   }
 }
 
 document.getElementById("checkBtn").addEventListener("click", checkURL);
-document.getElementById("urlInput").addEventListener("keypress", (e) => {
-  if (e.key === "Enter") {
-    checkURL();
-  }
+document.getElementById("urlInput").addEventListener("keypress", e => {
+  if (e.key === "Enter") checkURL();
 });
