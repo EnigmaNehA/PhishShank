@@ -91,10 +91,12 @@ def check_dns_record(domain_name):
         socket.gethostbyname(domain_name)
         w = whois.whois(domain_name)
         if not w or not w.domain_name:
-            return 1
+            return 1  # No WHOIS = potentially suspicious
         return 0
-    except:
+    except Exception as e:
+        logging.warning(f"[DNS] Error for {domain_name}: {e}")
         return 1
+
 
 # Global cache for umbrella domains
 umbrella_domains = set()
@@ -102,20 +104,20 @@ umbrella_domains = set()
 def load_umbrella_list():
     global umbrella_domains
     if umbrella_domains:
-        return
+        return  # already loaded
+
     try:
         url = "https://s3-us-west-1.amazonaws.com/umbrella-static/top-1m.csv.zip"
-        r = requests.get(url)
-        from io import BytesIO
-        import zipfile, csv
-        with zipfile.ZipFile(BytesIO(r.content)) as z:
+        response = requests.get(url, timeout=10)
+        with zipfile.ZipFile(BytesIO(response.content)) as z:
             with z.open("top-1m.csv") as f:
                 reader = csv.reader(map(lambda b: b.decode("utf-8"), f))
                 for row in reader:
                     if len(row) > 1:
                         umbrella_domains.add(row[1].strip().lower())
     except Exception as e:
-        logging.warning(f"Could not load umbrella list: {e}")
+        logging.warning(f"[Umbrella] Could not load umbrella list: {e}")
+
 
 def extract_web_traffic(url):
     try:
@@ -124,7 +126,8 @@ def extract_web_traffic(url):
         extracted = tldextract.extract(url)
         domain = f"{extracted.domain}.{extracted.suffix}".lower()
         return 0 if domain in umbrella_domains else 1
-    except:
+    except Exception as e:
+        logging.warning(f"[Umbrella] Error for {url}: {e}")
         return 1
 
 def get_domain_info(domain_name):
@@ -133,42 +136,51 @@ def get_domain_info(domain_name):
         creation_date = w.creation_date
         expiration_date = w.expiration_date
 
+        # Sometimes it's a list, take the first
         if isinstance(creation_date, list):
             creation_date = creation_date[0]
         if isinstance(expiration_date, list):
             expiration_date = expiration_date[0]
 
         return creation_date, expiration_date
-    except:
+    except Exception as e:
+        logging.warning(f"[WHOIS] Info fetch failed for {domain_name}: {e}")
         return None, None
 
 def domain_age(domain_name):
     creation_date, expiration_date = get_domain_info(domain_name)
     if not creation_date or not expiration_date:
         return 1
+
     try:
         if isinstance(creation_date, str):
             creation_date = datetime.strptime(creation_date[:10], "%Y-%m-%d")
         if isinstance(expiration_date, str):
             expiration_date = datetime.strptime(expiration_date[:10], "%Y-%m-%d")
+
         age_months = (expiration_date - creation_date).days / 30
         return 1 if age_months < 6 else 0
-    except:
+    except Exception as e:
+        logging.warning(f"[Domain Age] Error for {domain_name}: {e}")
         return 1
 
 def domainEnd(domain_name):
     creation_date, expiration_date = get_domain_info(domain_name)
     if not creation_date or not expiration_date:
         return 0
+
     try:
         if isinstance(creation_date, str):
             creation_date = datetime.strptime(creation_date[:10], "%Y-%m-%d")
         if isinstance(expiration_date, str):
             expiration_date = datetime.strptime(expiration_date[:10], "%Y-%m-%d")
+
         age_months = (expiration_date - creation_date).days / 30
         return 1 if age_months > 12 else 0
-    except:
+    except Exception as e:
+        logging.warning(f"[Domain End] Error for {domain_name}: {e}")
         return 0
+
 
 def iframe(url):
     try:
