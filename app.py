@@ -20,7 +20,7 @@ app = Flask(__name__)
 CORS(app)
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-MODEL_PATH = "model1.json"
+MODEL_PATH = "model(1).json"
 
 model = xgb.Booster()
 model.load_model(MODEL_PATH)
