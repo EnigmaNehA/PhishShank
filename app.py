@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-MODEL_PATH = "model.json"  # <-- Updated
+MODEL_PATH = "model(1).json"  # <-- Updated
 
 # Load XGBoost model from .json file
 model = xgb.Booster()
