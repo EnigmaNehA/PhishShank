@@ -6,35 +6,26 @@ import requests
 import whois
 import tldextract
 import numpy as np
-import xgboost as xgb  # <-- Changed
+import xgboost as xgb
 from urllib.parse import urlparse
 from datetime import datetime
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
-
-# Configure logging
 logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS after creating app
-
-@app.route("/", methods=["GET"])
-def home():
-    return render_template("index.html")
-
+CORS(app)
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-MODEL_PATH = "model(1).json"  # <-- Updated
+MODEL_PATH = "model1.json"
 
-# Load XGBoost model from .json file
 model = xgb.Booster()
 model.load_model(MODEL_PATH)
 
-# === [Feature extraction functions remain unchanged] ===
+# -- Feature extraction functions here (unchanged) --
 def getDomain(url):
     domain = urlparse(url).netloc
     if re.match(r"^www\.", domain):
@@ -218,7 +209,30 @@ def forwarding(url):
         return 1
 
 
-# Sample vector wrapper for Booster model
+def check_google_safe_browsing(url):
+    if not GOOGLE_API_KEY:
+        return 0
+    api_url = f"https://safebrowsing.googleapis.com/v4/threatMatches:find?key={GOOGLE_API_KEY}"
+    payload = {
+        "client": {
+            "clientId": "yourcompanyname",
+            "clientVersion": "1.0"
+        },
+        "threatInfo": {
+            "threatTypes": ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE", "POTENTIALLY_HARMFUL_APPLICATION"],
+            "platformTypes": ["ANY_PLATFORM"],
+            "threatEntryTypes": ["URL"],
+            "threatEntries": [{"url": url}]
+        }
+    }
+    try:
+        response = requests.post(api_url, json=payload)
+        result = response.json()
+        return 1 if "matches" in result else 0
+    except Exception as e:
+        logging.error(f"Google Safe Browsing API error: {e}")
+        return 0
+
 def extract_features_from_url(url):
     domain = getDomain(url)
     features = [
@@ -240,26 +254,30 @@ def extract_features_from_url(url):
         forwarding(url),
         check_google_safe_browsing(url)
     ]
-    dmatrix = xgb.DMatrix(np.array([features]))  # wrap in DMatrix
-    return dmatrix
+    return xgb.DMatrix(np.array([features]))
 
+@app.route("/", methods=["GET"])
+def home():
+    return render_template("index.html")
 
-# === Predict route updated for Booster inference ===
 @app.route("/predict", methods=["POST"])
 def predict():
-    data = request.get_json()
-    if not data or "url" not in data:
-        return jsonify({"error": "Missing 'url' in request"}), 400
+    url = request.form.get("url", "").strip()
+    if not url:
+        return render_template("index.html", error="Missing URL")
 
-    url = data["url"].strip()
     if not url.startswith(("http://", "https://")):
         url = "http://" + url
 
     try:
         dmatrix = extract_features_from_url(url)
-        prediction = int(model.predict(dmatrix)[0] >= 0.5)  # Binary decision
+        preds = model.predict(dmatrix)
+        prediction = int(preds[0] >= 0.5)
         result = "Phishing" if prediction == 1 else "Legitimate"
-        return jsonify({"url": url, "prediction": result})
+        return render_template("index.html", url=url, prediction=result)
     except Exception as e:
         logging.error(f"Prediction error: {e}")
-        return jsonify({"error": "Internal server error"}), 500
+        return render_template("index.html", error="Internal Server Error")
+
+if __name__ == "__main__":
+    app.run(debug=True)
