@@ -6,14 +6,14 @@ import requests
 import whois
 import tldextract
 import numpy as np
-import joblib  # Changed for model.pkl
+import xgboost as xgb  # <-- Changed
 from urllib.parse import urlparse
 from datetime import datetime
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 
-# Load env variables
+# Load environment variables
 load_dotenv()
 
 # Configure logging
@@ -23,22 +23,23 @@ app = Flask(__name__)
 CORS(app)
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-MODEL_PATH = "model.pkl"
+MODEL_PATH = "model.json"  # <-- Updated
 
-# Load pre-trained XGBoost model saved using joblib
-model = joblib.load(MODEL_PATH)
+# Load XGBoost model from .json file
+model = xgb.Booster()
+model.load_model(MODEL_PATH)
 
-# === Feature Extraction Functions ===
+# === [Feature extraction functions remain unchanged] ===
 def getDomain(url):
     domain = urlparse(url).netloc
-    if domain.startswith("www."):
+    if re.match(r"^www\.", domain):
         domain = domain.replace("www.", "", 1)
     return domain
 
 def havingIP(url):
     try:
         domain = urlparse(url).netloc
-        socket.inet_aton(domain)
+        socket.inet_aton(domain)  # Checks IPv4
         return 1
     except:
         return 0
@@ -59,7 +60,7 @@ def getDepth(url):
 def redirection(url):
     try:
         pos = url.rfind('//')
-        return 1 if pos > 7 else 0
+        return 1 if pos > 7 else 0  # After "http://" or "https://"
     except:
         return 0
 
@@ -69,7 +70,14 @@ def httpDomain(url):
     except:
         return 1
 
-shortening_services = r"(bit\.ly|goo\.gl|tinyurl\.com|ow\.ly|t\.co|bitly\.com|j\.mp|tr\.im|is\.gd|buff\.ly|adf\.ly)"
+shortening_services = r"(?:bit\.ly|goo\.gl|shorte\.st|go2l\.ink|x\.co|ow\.ly|t\.co|tinyurl|tr\.im|is\.gd|" \
+                      r"cli\.gs|yfrog\.com|migre\.me|ff\.im|tiny\.cc|url4\.eu|twit\.ac|su\.pr|twurl\.nl|" \
+                      r"snipurl\.com|short\.to|BudURL\.com|ping\.fm|post\.ly|Just\.as|bkite\.com|snipr\.com|" \
+                      r"fic\.kr|loopt\.us|doiop\.com|short\.ie|kl\.am|wp\.me|rubyurl\.com|om\.ly|to\.ly|" \
+                      r"bit\.do|lnkd\.in|db\.tt|qr\.ae|adf\.ly|bitly\.com|cur\.lv|tinyurl\.com|ity\.im|" \
+                      r"q\.gs|po\.st|bc\.vc|twitthis\.com|u\.to|j\.mp|buzurl\.com|cutt\.us|u\.bb|" \
+                      r"yourls\.org|prettylinkpro\.com|scrnch\.me|filoops\.info|vzturl\.com|qr\.net|" \
+                      r"1url\.com|tweez\.me|v\.gd|link\.zip\.net)"
 
 def is_shortening_service(url):
     if not isinstance(url, str):
@@ -92,13 +100,34 @@ def check_dns_record(domain_name):
     except:
         return 1
 
-# Umbrella domains disabled for Render runtime
+# Global cache for umbrella domains
 umbrella_domains = set()
+
+def load_umbrella_list():
+    global umbrella_domains
+    if umbrella_domains:
+        return
+    try:
+        url = "https://s3-us-west-1.amazonaws.com/umbrella-static/top-1m.csv.zip"
+        r = requests.get(url)
+        from io import BytesIO
+        import zipfile, csv
+        with zipfile.ZipFile(BytesIO(r.content)) as z:
+            with z.open("top-1m.csv") as f:
+                reader = csv.reader(map(lambda b: b.decode("utf-8"), f))
+                for row in reader:
+                    if len(row) > 1:
+                        umbrella_domains.add(row[1].strip().lower())
+    except Exception as e:
+        logging.warning(f"Could not load umbrella list: {e}")
 
 def extract_web_traffic(url):
     try:
-        # Fallback: always return 1 (low traffic)
-        return 1
+        if not umbrella_domains:
+            load_umbrella_list()
+        extracted = tldextract.extract(url)
+        domain = f"{extracted.domain}.{extracted.suffix}".lower()
+        return 0 if domain in umbrella_domains else 1
     except:
         return 1
 
@@ -183,31 +212,8 @@ def forwarding(url):
     except:
         return 1
 
-# Google Safe Browsing
-def check_google_safe_browsing(url):
-    api_url = "https://safebrowsing.googleapis.com/v4/threatMatches:find"
-    payload = {
-        "client": {
-            "clientId": "yourcompanyname",
-            "clientVersion": "1.0"
-        },
-        "threatInfo": {
-            "threatTypes": ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE", "POTENTIALLY_HARMFUL_APPLICATION"],
-            "platformTypes": ["ANY_PLATFORM"],
-            "threatEntryTypes": ["URL"],
-            "threatEntries": [{"url": url}]
-        }
-    }
-    params = {"key": GOOGLE_API_KEY}
-    try:
-        resp = requests.post(api_url, json=payload, params=params, timeout=5)
-        data = resp.json()
-        return 1 if "matches" in data else 0
-    except Exception as e:
-        logging.error(f"Safe Browsing API error: {e}")
-        return 0
 
-# Feature Vector
+# Sample vector wrapper for Booster model
 def extract_features_from_url(url):
     domain = getDomain(url)
     features = [
@@ -229,9 +235,10 @@ def extract_features_from_url(url):
         forwarding(url),
         check_google_safe_browsing(url)
     ]
-    return np.array(features).reshape(1, -1)
+    dmatrix = xgb.DMatrix(np.array([features]))  # wrap in DMatrix
+    return dmatrix
 
-# Routes
+# === Predict route updated for Booster inference ===
 @app.route("/predict", methods=["POST"])
 def predict():
     data = request.get_json()
@@ -243,14 +250,14 @@ def predict():
         url = "http://" + url
 
     try:
-        features = extract_features_from_url(url)
-        prediction = model.predict(features)[0]
+        dmatrix = extract_features_from_url(url)
+        prediction = int(model.predict(dmatrix)[0] >= 0.5)  # Binary decision
         result = "Phishing" if prediction == 1 else "Legitimate"
         return jsonify({"url": url, "prediction": result})
     except Exception as e:
         logging.error(f"Prediction error: {e}")
         return jsonify({"error": "Internal server error"}), 500
 
-# Entry Point
+# Entry point
 if __name__ == "__main__":
     app.run(debug=False, host="0.0.0.0", port=5000)
