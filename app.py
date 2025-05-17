@@ -260,25 +260,30 @@ def extract_features_from_url(url):
 @app.route("/", methods=["GET"])
 def home():
     return render_template("index.html")
-
+    
 @app.route("/predict", methods=["POST"])
 def predict():
-    url = request.form.get("url", "").strip()
-    if not url:
-        return render_template("index.html", error="Missing URL")
-
-    if not url.startswith(("http://", "https://")):
-        url = "http://" + url
-
     try:
+        url = request.form.get("url", "").strip()
+        print(f"Received URL: {url}")
+
+        if not url.startswith(("http://", "https://")):
+            url = "http://" + url
+
         features = extract_features_from_url(url)
-        prediction = int(model.predict(np.array([features]))[0])
-        result = "Phishing" if prediction == 1 else "Legitimate"
-        logging.info(f"Prediction: {result} for URL: {url}")
+        print(f"Extracted features: {features}")
+
+        features_array = np.array([features])
+        prediction = model.predict(features_array)
+        print(f"Prediction result: {prediction}")
+
+        result = "Phishing" if int(prediction[0]) == 1 else "Legitimate"
         return render_template("index.html", url=url, prediction=result)
+
     except Exception as e:
-        logging.error(f"Prediction error: {e}")
-        return render_template("index.html", error="Internal Server Error")
+        print(f"Error during prediction: {e}")
+        return render_template("index.html", error="Error checking URL. Please try again later.")
+
 
 if __name__ == "__main__":
     debug_mode = os.getenv("FLASK_DEBUG", "false").lower() == "true"
