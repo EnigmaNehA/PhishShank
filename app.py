@@ -20,7 +20,17 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
-CORS(app)
+CORS(app)  # Enable CORS after creating app
+
+@app.route("/", methods=["GET"])
+def home():
+    return jsonify({"message": "Welcome to the Phishing Detection API. Use the /predict endpoint to check URLs."})
+
+# Other routes go here
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 MODEL_PATH = "model.json"  # <-- Updated
