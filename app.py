@@ -238,6 +238,10 @@ def extract_features_from_url(url):
     dmatrix = xgb.DMatrix(np.array([features]))  # wrap in DMatrix
     return dmatrix
 
+@app.route("/", methods=["GET"])
+def home():
+    return jsonify({"message": "Welcome to the Phishing Detection API. Use the /predict endpoint to check URLs."})
+
 # === Predict route updated for Booster inference ===
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -257,6 +261,7 @@ def predict():
     except Exception as e:
         logging.error(f"Prediction error: {e}")
         return jsonify({"error": "Internal server error"}), 500
+
 
 # Entry point
 if __name__ == "__main__":
