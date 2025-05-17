@@ -6,3 +6,8 @@ xgboost
 numpy
 pandas
 requests
+python-dotenv
+joblib
+imbalanced-learn
+whois
+tldextract
