@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+  console.log("Script loaded and DOM ready");
   const form = document.getElementById("urlForm");
   const input = document.getElementById("urlInput");
   const resultBox = document.getElementById("result");
