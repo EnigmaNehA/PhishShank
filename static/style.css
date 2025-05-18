@@ -1,0 +1,207 @@
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script&family=Poppins:wght@600;800&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 20px;
+  justify-content: center;
+  align-items: center;
+}
+.container {
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(12px);
+  border-radius: 22px;
+  padding: 48px 36px;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 14px 40px rgba(71, 60, 204, 0.45);
+  text-align: center;
+}
+h1 {
+  margin-bottom: 14px;
+  font-family: 'Dancing Script', cursive;
+  font-weight: 700;
+  font-size: 3.25rem;
+  letter-spacing: 1.6px;
+  color: #f9fafb;
+  text-shadow:
+    0 0 10px #a78bfa,
+    0 0 28px #7c3aed;
+}
+p.description {
+  margin-bottom: 36px;
+  font-size: 1.15rem;
+  color: #dcd6f7dd;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+input[type="url"] {
+  padding: 16px 20px;
+  font-size: 1.15rem;
+  border-radius: 14px;
+  border: 2.5px solid transparent;
+  outline: none;
+  transition: box-shadow 0.35s ease, border-color 0.35s ease;
+  background: rgba(255, 255, 255, 0.15);
+  color: #f0f0ff;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-shadow: 0 0 4px rgba(0,0,0,0.2);
+}
+input[type="url"]::placeholder {
+  color: #ddd6feaa;
+}
+input[type="url"]:focus {
+  border-color: #a78bfa;
+  box-shadow:
+    0 0 15px 3px #a78bfa;
+  background: rgba(255, 255, 255, 0.25);
+}
+button {
+  background: linear-gradient(-45deg, #a78bfa, #7c3aed, #c084fc, #8b5cf6);
+  background-size: 300% 300%;
+  color: #fff;
+  font-weight: 800;
+  padding: 16px 0;
+  border-radius: 14px;
+  border: none;
+  font-size: 1.35rem;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: background-position 2.5s ease, box-shadow 0.35s ease;
+  box-shadow:
+    0 6px 18px rgba(124, 58, 237, 0.6);
+  user-select: none;
+}
+button:hover {
+  background-position: 100% 0;
+  box-shadow:
+    0 8px 24px rgba(167, 139, 250, 0.85),
+    0 0 10px 4px #a78bfa;
+}
+button:active {
+  transform: scale(0.98);
+  box-shadow:
+    0 4px 14px rgba(167, 139, 250, 0.9);
+}
+.result {
+  margin-top: 32px;
+  font-size: 1.3rem;
+  padding: 24px 20px;
+  border-radius: 16px;
+  min-height: 68px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  opacity: 0;
+  transition: opacity 0.5s ease, box-shadow 0.5s ease;
+  user-select: none;
+}
+.result.visible {
+  opacity: 1;
+}
+.result.safe {
+  background: linear-gradient(135deg, #38b000cc, #198754cc);
+  color: #e6ffe6;
+  box-shadow:
+    0 0 18px 6px #38b000cc;
+}
+.result.phishing {
+  background: linear-gradient(135deg, #dc2626cc, #b91c1ccc);
+  color: #ffe6e6;
+  box-shadow:
+    0 0 18px 6px #dc2626cc;
+}
+.result.error {
+  background: linear-gradient(135deg, #f97316cc, #c2410ccc);
+  color: #fff6e6;
+  box-shadow:
+    0 0 18px 6px #f97316cc;
+}
+footer {
+  font-family: 'Dancing Script', cursive;
+  font-size: 1.5rem;
+  color: #dcd6f7cc;
+  margin-top: auto;
+  padding: 24px 0 8px;
+  text-align: center;
+  user-select: none;
+  text-shadow: 0 0 6px #7c3aedcc;
+}
+
+.result {
+  margin-top: 20px;
+  padding: 15px;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.result.safe {
+  background-color: #e6f9e6;
+  color: #1a7f1a;
+  border: 2px solid #1a7f1a;
+}
+
+.result.suspicious {
+  background-color: #fff8e6;
+  color: #c47f00;
+  border: 2px solid #c47f00;
+}
+
+.result.high-risk {
+  background-color: #ffe6e6;
+  color: #c0392b;
+  border: 2px solid #c0392b;
+}
+
+.result.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 2px solid #721c24;
+}
+
+.icon {
+  margin-right: 8px;
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 400px){
+  h1 {
+    font-size: 2.6rem;
+    letter-spacing: 1px;
+  }
+  p.description {
+    font-size: 1rem;
+    letter-spacing: 0.3px;
+  }
+  button {
+    font-size: 1.2rem;
+    letter-spacing: 1.6px;
+  }
+  .result {
+    font-size: 1.1rem;
+  }
+  footer {
+    font-size: 1.5rem;
+    padding: 18px 0 6px;
+  }
+}
