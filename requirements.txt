@@ -7,3 +7,7 @@ numpy
 requests
 python-dotenv
 flask
+whois
+urllib
+datetime
+joblib
