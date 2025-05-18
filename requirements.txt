@@ -10,3 +10,4 @@ flask
 whois
 datetime
 joblib
+flask-cors
