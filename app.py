@@ -10,6 +10,9 @@ from datetime import datetime
 import socket
 import whois
 from flask_cors import CORS
+
+# Flask app
+app = Flask(__name__ , static_folder='static')
 CORS(app)
 
 
@@ -20,9 +23,6 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 # Load trained model
 model = xgb.XGBClassifier()
 model.load_model("model.json")
-
-# Flask app
-app = Flask(__name__ , static_folder='static')
 
 # ----------------------------------------
 # 🔍 Feature Extraction Functions (from your notebook)
