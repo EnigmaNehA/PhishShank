@@ -1,4 +1,4 @@
-gunicorn=23.0.0
+gunicorn
 tldextract
 scikit-learn
 Flask
