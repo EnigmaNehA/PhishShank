@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("checkForm");
+  const form = document.getElementById("urlForm");
   const input = document.getElementById("urlInput");
   const resultBox = document.getElementById("result");
 
