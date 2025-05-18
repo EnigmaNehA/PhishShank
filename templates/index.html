@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Phishing Detection System</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container" role="main">
+    <h1>Phishing URL Detector</h1>
+    <p class="description">Enter a URL below to check if it might be a phishing attempt.</p>
+    <form id="urlForm">
+      <input type="url" id="urlInput" placeholder="https://example.com" aria-label="Enter URL to check" required autocomplete="off" />
+      <button type="submit" aria-live="polite">Check URL</button>
+    </form>
+    <div id="result" class="result" aria-live="polite" role="alert" aria-atomic="true"></div>
+  </div>
+  <footer>
+    &copy; Designed by Neha Nayak 🤍
+  </footer>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>
+
