@@ -191,8 +191,6 @@ def check_url():
         # Determine risk level
         if prediction == 1 and google_flag:
             result = "High Risk"
-        elif prediction == 1 or google_flag:
-            result = "Suspicious"
         else:
             result = "Safe"
 
