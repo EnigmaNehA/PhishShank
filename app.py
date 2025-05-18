@@ -54,15 +54,57 @@ def prefix_suffix(url):
     domain = urlparse(url).netloc
     return 1 if '-' in domain else 0
 
-# Placeholder values for DNS/domain/JS-based features
-def dns_record(_): return 0
-def web_traffic(_): return 0
-def domain_age(_): return 0
-def domain_end(_): return 0
-def iframe(url): return 0
-def mouse_over(url): return 0
-def right_click(url): return 0
-def forwarding(url): return 0
+def dns_record(url):
+    domain = url.split('//')[-1].split('/')[0]
+    try:
+        socket.gethostbyname(domain)
+        return 0
+    except:
+        return 1
+
+def web_traffic(url):
+    # Placeholder for actual traffic score API
+    return 1  # You can replace this with real Alexa ranking logic if needed
+
+def domain_age(url):
+    try:
+        domain = whois.whois(url)
+        if domain.creation_date is None or domain.expiration_date is None:
+            return 1
+        if isinstance(domain.creation_date, list):
+            creation_date = domain.creation_date[0]
+        else:
+            creation_date = domain.creation_date
+        age = (datetime.now() - creation_date).days
+        return 1 if age < 180 else 0
+    except:
+        return 1
+
+def domain_end(url):
+    try:
+        domain = whois.whois(url)
+        if domain.expiration_date is None:
+            return 1
+        if isinstance(domain.expiration_date, list):
+            expiration_date = domain.expiration_date[0]
+        else:
+            expiration_date = domain.expiration_date
+        end = (expiration_date - datetime.now()).days
+        return 1 if end < 180 else 0
+    except:
+        return 1
+
+def iframe(response):
+    return 1 if "<iframe" in response else 0
+
+def mouse_over(response):
+    return 1 if "onmouseover" in response else 0
+
+def right_click(response):
+    return 1 if "event.button==2" in response else 0
+
+def forwarding(response):
+    return 1 if response.count('window.open') > 1 else 0
 
 def extract_features(url):
     parsed = urlparse(url)
@@ -81,12 +123,18 @@ def extract_features(url):
         web_traffic(domain),
         domain_age(domain),
         domain_end(domain),
-        iframe(url),
-        mouse_over(url),
-        right_click(url),
-        forwarding(url)
+        try:
+            response = urllib.request.urlopen(url).read().decode()
+        except:
+            response = ""
+    
+        features.append(iframe(response))
+        features.append(mouse_over(response))
+        features.append(right_click(response))
+        features.append(forwarding(response))
+    
+        return np.array([features])
     ]
-    return np.array(features).reshape(1, -1)
 
 # ----------------------------------------
 # 🔐 Google Safe Browsing Check
