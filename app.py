@@ -9,6 +9,9 @@ from dotenv import load_dotenv
 from datetime import datetime
 import socket
 import whois
+from flask_cors import CORS
+CORS(app)
+
 
 # Load environment variables
 load_dotenv()
@@ -173,13 +176,19 @@ def home():
 
 @app.route('/predict', methods=["POST"])
 def check_url():
-    url = request.get_json().get("url")
-
     try:
+        # Get URL from request
+        data = request.get_json()
+        url = data.get('url')  # Correct way to extract URL
+
+        # Extract features from the URL for prediction
         features = extract_features(url)
         prediction = model.predict(features)[0]
+
+        # Check against Google Safe Browsing
         google_flag = check_google_safe_browsing(url)
 
+        # Determine risk level
         if prediction == 1 and google_flag:
             result = "High Risk"
         elif prediction == 1 or google_flag:
@@ -188,6 +197,7 @@ def check_url():
             result = "Safe"
 
         return jsonify(result=result)
+    
     except Exception as e:
         return jsonify(error=str(e)), 500
 
