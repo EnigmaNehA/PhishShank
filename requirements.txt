@@ -1,12 +1,11 @@
 gunicorn
 tldextract
 scikit-learn
-Flask
 xgboost
 numpy
 requests
 python-dotenv
-flask
+Flask
 whois
 datetime
 joblib
