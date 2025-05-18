@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
     resultBox.textContent = "🔍 Checking URL...";
 
     try {
-      const response = await fetch("/check", {
+      const response = await fetch("/predict", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
