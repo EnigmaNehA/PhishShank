@@ -27,9 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.result === "High Risk") {
         resultBox.classList.add("high-risk");
         resultBox.innerHTML = `<span class="icon">❌</span> <strong>High Risk:</strong> Detected by model and Google.`;
-      } else if (data.result === "Suspicious") {
-        resultBox.classList.add("suspicious");
-        resultBox.innerHTML = `<span class="icon">⚠️</span> <strong>Suspicious:</strong> Detected by model or Google.`;
+      }
       } else if (data.result === "Safe") {
         resultBox.classList.add("safe");
         resultBox.innerHTML = `<span class="icon">✅</span> <strong>Safe:</strong> No threat detected.`;
