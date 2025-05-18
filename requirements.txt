@@ -1,7 +1,7 @@
+gunicorn
 tldextract
 scikit-learn
 Flask
-gunicorn
 xgboost
 numpy
 requests
