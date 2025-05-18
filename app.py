@@ -6,6 +6,9 @@ import requests
 from flask import Flask, request, jsonify, render_template
 from urllib.parse import urlparse
 from dotenv import load_dotenv
+from datetime import datetime
+import socket
+import whois
 
 # Load environment variables
 load_dotenv()
@@ -122,19 +125,21 @@ def extract_features(url):
         dns_record(domain),
         web_traffic(domain),
         domain_age(domain),
-        domain_end(domain),
-        try:
-            response = urllib.request.urlopen(url).read().decode()
-        except:
-            response = ""
-    
-        features.append(iframe(response))
-        features.append(mouse_over(response))
-        features.append(right_click(response))
-        features.append(forwarding(response))
-    
-        return np.array([features])
+        domain_end(domain)
     ]
+
+    try:
+        response = urllib.request.urlopen(url).read().decode()
+    except:
+        response = ""
+
+    features.append(iframe(response))
+    features.append(mouse_over(response))
+    features.append(right_click(response))
+    features.append(forwarding(response))
+
+    return np.array([features])
+
 
 # ----------------------------------------
 # 🔐 Google Safe Browsing Check
