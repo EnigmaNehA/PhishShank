@@ -50,7 +50,10 @@ def redirection(url):
 
 def https_in_domain(url):
     domain = urlparse(url).netloc
-    return 1 if 'https' in domain else 0
+    if ('http' or 'https') in url:
+        return 0
+    else:
+        return 1
 
 def shortening_service(url):
     services = r"bit\.ly|goo\.gl|shorte\.st|go2l\.ink|x\.co|ow\.ly|tinyurl|tr\.im|is\.gd|cli\.gs|yfrog\.com|migre\.me|ff\.im|tiny\.cc|url4\.eu|twit\.ac|su\.pr|twurl\.nl|snipurl\.com|short\.to|BudURL\.com|ping\.fm|post\.ly|Just\.as|bkite\.com|snipr\.com|fic\.kr|loopt\.us|doiop\.com|short\.ie|kl\.am|wp\.me|rubyurl\.com|om\.ly|to\.ly|bit\.do|t\.co|lnkd\.in|db\.tt|qr\.ae|adf\.ly|bitly\.com|cur\.lv|ity\.im|q\.gs|po\.st|bc\.vc|twitthis\.com|u\.to|j\.mp|buzurl\.com|cutt\.us|u\.bb|yourls\.org|prettylinkpro\.com|scrnch\.me|filoops\.info|vzturl\.com|qr\.net|1url\.com|tweez\.me|v\.gd|tr\.im|link\.zip\.net"
@@ -70,7 +73,7 @@ def dns_record(url):
 
 def web_traffic(url):
     # Placeholder for actual traffic score API
-    return 1  # You can replace this with real Alexa ranking logic if needed
+    return 0  # You can replace this with real Alexa ranking logic if needed
 
 def domain_age(url):
     try:
