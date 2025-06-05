@@ -192,7 +192,7 @@ def check_url():
         google_flag = check_google_safe_browsing(url)
 
         # Determine risk level
-        if prediction == 1 and google_flag:
+        if prediction == 1 or google_flag:
             result = "High Risk"
         else:
             result = "Safe"
