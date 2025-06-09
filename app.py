@@ -11,6 +11,8 @@ import socket
 import whois
 from flask_cors import CORS
 
+!pip install tranco tldextract
+
 # Flask app
 app = Flask(__name__ , static_folder='static')
 CORS(app)
@@ -71,9 +73,51 @@ def dns_record(url):
     except:
         return 1
 
+import os
+import csv
+import tldextract
+import requests
+import zipfile
+from io import BytesIO
+
+# Global variable to store loaded domains
+umbrella_domains = set()
+
+def load_umbrella_list():
+    """
+    Downloads and loads the Umbrella Top 1M list into memory.
+    """
+    global umbrella_domains
+    try:
+        if umbrella_domains:
+            return  # Already loaded
+
+        # Download the zip file from Umbrella
+        url = "https://s3-us-west-1.amazonaws.com/umbrella-static/top-1m.csv.zip"
+        response = requests.get(url)
+        with zipfile.ZipFile(BytesIO(response.content)) as thezip:
+            with thezip.open("top-1m.csv") as thefile:
+                csv_reader = csv.reader(map(lambda b: b.decode('utf-8'), thefile))
+                for row in csv_reader:
+                    if len(row) > 1:
+                        domain = row[1].strip().lower()
+                        umbrella_domains.add(domain)
+    except:
+        umbrella_domains = set()
+
 def web_traffic(url):
-    # Placeholder for actual traffic score API
-    return 0  # You can replace this with real Alexa ranking logic if needed
+    """
+    Returns 0 if domain is in Umbrella Top 1M, 1 otherwise.
+    """
+    try:
+        if not umbrella_domains:
+            load_umbrella_list()
+
+        extracted = tldextract.extract(url)
+        domain = f"{extracted.domain}.{extracted.suffix}".lower()
+        return 0 if domain in umbrella_domains else 1
+    except:
+        return 1
 
 def domain_age(url):
     try:
