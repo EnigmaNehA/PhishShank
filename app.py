@@ -31,6 +31,16 @@ model.load_model("model.json")
 # 🔍 Feature Extraction Functions
 # ----------------------------------------
 
+trusted_domains = {
+    "google.com", "youtube.com", "whatsapp.com", "gmail.com",
+    "facebook.com", "linkedin.com", "amazon.com", "microsoft.com"
+}
+
+def is_trusted_domain(url):
+    extracted = tldextract.extract(url)
+    domain = f"{extracted.domain}.{extracted.suffix}".lower()
+    return domain in trusted_domains
+    
 def has_ip_address(url):
     try:
         ip_pattern = re.compile(r'http[s]?://(?:\d{1,3}\.){3}\d{1,3}')
@@ -119,8 +129,9 @@ def web_traffic(url):
 
 def domain_age(url):
     try:
-        domain = whois.whois(url)
-        creation_date = domain.creation_date[0] if isinstance(domain.creation_date, list) else domain.creation_date
+        domain = urlparse(url).netloc
+        info = whois.whois(domain)
+        creation_date = info.creation_date[0] if isinstance(info.creation_date, list) else info.creation_date
         if creation_date is None:
             return 1
         age = (datetime.now() - creation_date).days
@@ -130,14 +141,16 @@ def domain_age(url):
 
 def domain_end(url):
     try:
-        domain = whois.whois(url)
-        expiration_date = domain.expiration_date[0] if isinstance(domain.expiration_date, list) else domain.expiration_date
+        domain = urlparse(url).netloc
+        info = whois.whois(domain)
+        expiration_date = info.expiration_date[0] if isinstance(info.expiration_date, list) else info.expiration_date
         if expiration_date is None:
             return 1
         end = (expiration_date - datetime.now()).days
         return 1 if end < 180 else 0
     except:
         return 1
+
 
 # ----------------------------------------
 # 🧪 HTML/JS Based Features
@@ -235,6 +248,10 @@ def check_url():
     except Exception as e:
         return jsonify(error=str(e)), 500
 
+@app.route('/health')
+def health_check():
+    return jsonify(status="ok"), 200
+    
 # ----------------------------------------
 # 🚀 Run (for local testing)
 # ----------------------------------------
