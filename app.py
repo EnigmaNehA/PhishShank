@@ -128,16 +128,7 @@ def web_traffic(url):
 # ----------------------------------------
 
 def domain_age(url):
-    try:
-        domain = urlparse(url).netloc
-        info = whois.whois(domain)
-        creation_date = info.creation_date[0] if isinstance(info.creation_date, list) else info.creation_date
-        if creation_date is None:
-            return 1
-        age = (datetime.now() - creation_date).days
-        return 1 if age < 180 else 0
-    except:
-        return 1
+    return 1
 
 def domain_end(url):
     try:
